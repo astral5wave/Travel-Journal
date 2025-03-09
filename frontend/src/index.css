@@ -1,0 +1,91 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.rdp-root {
+  --rdp-accent-color: #BB86FC;
+  --rdp-accent-background-color: rgba(207, 167, 255, 0.1);
+  --rdp-day_button-border-radius: 8px;
+  --rdp-selected-font: bold medium var(--rdp-font-family);
+  --rdp-dropdown-gap: 30px;
+
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: #BB86FC;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-track {
+    background-color: rgba(207,167,255,0.1);
+  }
+}
+
+/* Style Dropdown Options */
+.rdp-dropdown option {
+  background-color: #1E1E1E;
+  color: #ffffff;
+  text-align: center;
+}
+
+@layer base {
+  html {
+    font-family: "Poppins", "sans-serif";
+  }
+  body {
+    background-color: #121212;
+    overflow-x: hidden;
+  }
+}
+
+.scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+.scrollbar::-webkit-scrollbar-thumb {
+  background-color: #BB86FC;
+  border-radius: 3px;
+}
+.scrollbar::-webkit-scrollbar-track {
+  background-color: rgba(207,167,255,0.1);
+}
+body::-webkit-scrollbar {
+  width:0px;
+}
+body::-webkit-scrollbar-thumb {
+  background-color: #BB86FC;
+  border-radius: 10px;
+}
+body::-webkit-scrollbar-track {
+  background-color: rgba(207,167,255,0.1);
+}
+
+@layer components {
+  .input-box {
+    @apply w-full text-sm px-5 py-3 outline-none bg-white/10 border border-white/20 placeholder:text-white/50 text-on-surface rounded-lg mb-4;
+  }
+  .btn-primary {
+    @apply w-full text-white bg-primary my-2 rounded-full p-[10px] text-sm shadow-sm transition-colors delay-75 font-medium shadow-primary/50 hover:bg-white hover:text-primary;
+  }
+  .btn-secondary {
+    @apply bg-white text-primary border border-primary/50 hover:bg-primary hover:text-white;
+  }
+  .login-ui-box {
+    @apply w-80 h-[450px] rounded-full bg-primary absolute rotate-45;
+  }
+  .icon-btn {
+    @apply text-[22px] hover:text-red-500 cursor-pointer text-white drop-shadow;
+  }
+  .btn-small {
+    @apply flex items-center gap-1 text-primary bg-white/5 backdrop-blur-md px-3 py-[3px] shadow-cyan-100/0 rounded-md text-sm border border-white/20 hover:bg-primary hover:text-on-primary;
+  }
+  .btn-delete {
+    @apply text-rose-500 bg-rose-50 hover:bg-rose-500 hover:text-white border-none shadow-sm shadow-black/20;
+  }
+  .input-label {
+    @apply text-xs text-slate-400;
+  }
+}
