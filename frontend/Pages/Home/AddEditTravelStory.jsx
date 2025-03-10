@@ -11,6 +11,7 @@ import uploadImage from "../../src/utils/uploadImage";
 const AddEditTravelStory = ({ type, getAllStories, storyInfo, onClose }) => {
   const [title, setTitle] = useState("");
   const [storyImg, setStoryImg] = useState(null);
+  const [imageId, setImageId] = useState("")
   const [story, setStory] = useState("");
   const [visitedLocation, setVisitedLoaction] = useState([]);
   const [visitedDate, setVisitedDate] = useState(null);
@@ -25,91 +26,217 @@ const AddEditTravelStory = ({ type, getAllStories, storyInfo, onClose }) => {
     setVisitedLoaction([]);
   }
   //add travel story
+  // const addTravelStory = async () => {
+  //   try {
+  //     let imageUrl = "";
+  //     let image_public_id = "";
+  //     if (storyImg) {
+  //       const imageUploadData = await uploadImage(storyImg);
+  //       imageUrl = imageUploadData.imageUrl || "";
+  //       image_public_id = imageUploadData.image_public_id || "";
+  //     }
+
+  //     const response = await axiosInstance.post("/add-travel-story", {
+  //       title,
+  //       story,
+  //       imageUrl: imageUrl || "",
+  //       image_public_id: image_public_id || "",
+  //       visitedDate: visitedDate
+  //         ? moment(visitedDate).valueOf()
+  //         : moment().valueOf(),
+  //       visitedLocation,
+  //     });
+
+  //     if (response.data && response.data.story) {
+  //       toast.success("Story Added Successfully");
+  //       getAllStories();
+  //       closeModal();
+  //       setNull();
+  //     }
+  //   } catch (error) {
+  //     if (error.response && error.response.data && error.response.data.message) {
+  //       setError(error.response.data.message);
+  //     }
+  //     else {
+  //       setError("An Unxpected Error occured while adding story")
+  //     }
+  //   }
+
+  // };
   const addTravelStory = async () => {
     try {
-      let imageUrl = "";
-      if (storyImg) {
-        const imageUploadData = await uploadImage(storyImg);
-        imageUrl = imageUploadData.imageUrl || "";
-      }
+        const combinedPromise = new Promise(async (resolve, reject) => {
+            let imageUrl = "";
+            let image_public_id = "";
 
-      const response = await axiosInstance.post("/add-travel-story", {
-        title,
-        story,
-        imageUrl: imageUrl || "",
-        visitedDate: visitedDate
-          ? moment(visitedDate).valueOf()
-          : moment().valueOf(),
-        visitedLocation,
-      });
+            if (storyImg) {
+                const imageUploadData = await uploadImage(storyImg);
+                imageUrl = imageUploadData.imageUrl || "";
+                image_public_id = imageUploadData.image_public_id || "";
+            }
 
-      if (response.data && response.data.story) {
-        toast.success("Story Added Successfully");
+            const response = await axiosInstance.post("/add-travel-story", {
+                title,
+                story,
+                imageUrl: imageUrl || "",
+                image_public_id: image_public_id || "",
+                visitedDate: visitedDate
+                    ? moment(visitedDate).valueOf()
+                    : moment().valueOf(),
+                visitedLocation,
+            });
+
+            if (response.data && response.data.story) {
+                resolve("Story added successfully!"); // Resolves successfully
+            } else {
+                reject("Failed to add story."); // Rejects if no story in response
+            }
+        });
+
+        await toast.promise(combinedPromise, {
+            pending: "Adding story... Please wait",
+            success: "Story added successfully!",
+            error: "Failed to add story. Please try again."
+        });
+
         getAllStories();
         closeModal();
         setNull();
-      }
     } catch (error) {
-      if (error.response && error.response.data && error.response.data.message) {
-        setError(error.response.data.message);
-      }
-      else {
-        setError("An Unxpected Error occured while adding story")
-      }
+        if (error.response && error.response.data && error.response.data.message) {
+            setError(error.response.data.message);
+        } else {
+            setError("An Unexpected Error occurred while adding the story");
+        }
     }
-
-  };
-
+};
   //update travel story
+  // const updateTravelStory = async () => {
+  //   try {
+  //     let imageUrl = "";
+  //     let image_public_id = "";
+  //     if (storyImg && typeof storyImg === "string" && storyImg === uploadedImgUrl) {
+  //       imageUrl = storyImg;
+  //       image_public_id = imageId;
+  //     }
+  //     else if (!storyImg || (storyImg && typeof storyImg === "object")) {
+  //       if (imageId != "placeholderImageID") {
+  //         const deleteResponse = await axiosInstance.delete("/delete-image/", {
+  //           params: { image_public_id: imageId },
+  //         });
+  //         if (deleteResponse.data && deleteResponse.data.error === false) {
+  //           console.log(deleteResponse.data.message);
+  //         }
+  //       }
+
+  //       if (storyImg) {
+  //         const imageUploadData = await uploadImage(storyImg);
+  //         imageUrl = imageUploadData.imageUrl || "";
+  //         image_public_id = imageUploadData.image_public_id || "";
+  //       } else {
+  //         imageUrl = ""; // Ensure backend handles this properly
+  //         image_public_id = "";
+  //       }
+  //     }
+
+  //     //if storyImg is url means already uploaded image is there in new update but if Object means fresh image is there to be updated
+
+  //     const postData = {
+  //       title,
+  //       story,
+  //       visitedLocation,
+  //       visitedDate: visitedDate ? moment(visitedDate).valueOf() : moment().valueOf(),
+  //       imageUrl,
+  //       image_public_id,
+  //     }
+
+  //     const response = await axiosInstance.put("/edit-travel-story/" + storyInfo._id, postData);
+
+  //     if (response.data && response.data.story) {
+  //       toast.success("Story Updated Successfully");
+  //       getAllStories();
+  //       closeModal();
+  //       setUploadedImageUrl("");
+  //       setImageId("");
+  //     }
+  //   } catch (error) {
+  //     if (error.response && error.response.data && error.response.data.message) {
+  //       setError(error.response.data.message);
+  //     }
+  //     else {
+  //       setError("An Unxpected Error occured while updating story")
+  //     }
+  //   }
+  // };
   const updateTravelStory = async () => {
     try {
-      let imageUrl = "";
-      if (storyImg && typeof storyImg === "string" && storyImg === uploadedImgUrl) {
-        imageUrl = storyImg;
-      } else if (!storyImg || (storyImg && typeof storyImg === "object")) {
-        const deleteResponse = await axiosInstance.delete("/delete-image/", {
-          params: { imageUrl: uploadedImgUrl },
+        const combinedPromise = new Promise(async (resolve, reject) => {
+            let imageUrl = "";
+            let image_public_id = "";
+
+            // Condition 1: If the uploaded image is the same, keep existing URL & ID
+            if (storyImg && typeof storyImg === "string" && storyImg === uploadedImgUrl) {
+                imageUrl = storyImg;
+                image_public_id = imageId;
+            }
+            // Condition 2: If a new image is uploaded or no image is provided
+            else if (!storyImg || (storyImg && typeof storyImg === "object")) {
+                if (imageId !== "placeholderImageID") {
+                    const deleteResponse = await axiosInstance.delete("/delete-image/", {
+                        params: { image_public_id: imageId },
+                    });
+
+                    if (deleteResponse.data && deleteResponse.data.error === false) {
+                        console.log(deleteResponse.data.message);
+                    }
+                }
+
+                if (storyImg) {
+                    const imageUploadData = await uploadImage(storyImg);
+                    imageUrl = imageUploadData.imageUrl || "";
+                    image_public_id = imageUploadData.image_public_id || "";
+                } else {
+                    imageUrl = ""; 
+                    image_public_id = "";
+                }
+            }
+
+            const postData = {
+                title,
+                story,
+                visitedLocation,
+                visitedDate: visitedDate ? moment(visitedDate).valueOf() : moment().valueOf(),
+                imageUrl,
+                image_public_id,
+            };
+
+            const response = await axiosInstance.put(`/edit-travel-story/${storyInfo._id}`, postData);
+
+            if (response.data && response.data.story) {
+                resolve("Story updated successfully!"); // Resolve if everything succeeds
+            } else {
+                reject("Failed to update story."); // Reject if response fails
+            }
         });
-        
-        if (deleteResponse.data && deleteResponse.data.error === false) {
-          console.log(deleteResponse.data.message);
-        }
 
-        if (storyImg) {
-          const imageUploadData = await uploadImage(storyImg);
-          imageUrl = imageUploadData.imageUrl || "";
-        } else {
-          imageUrl = ""; // Ensure backend handles this properly
-        }
-      }
+        await toast.promise(combinedPromise, {
+            pending: "Updating story... Please wait",
+            success: "Story updated successfully!",
+            error: "Failed to update story. Please try again."
+        });
 
-      //if storyImg is url means already uploaded image is there in new update but if Object means fresh image is there to be updated
-
-      const postData = {
-        title,
-        story,
-        visitedLocation,
-        visitedDate: visitedDate ? moment(visitedDate).valueOf() : moment().valueOf(),
-        imageUrl,
-      }
-
-      const response = await axiosInstance.put("/edit-travel-story/" + storyInfo._id, postData);
-
-      if (response.data && response.data.story) {
-        toast.success("Story Updated Successfully");
         getAllStories();
         closeModal();
         setUploadedImageUrl("");
-      }
+        setImageId("");
     } catch (error) {
-      if (error.response && error.response.data && error.response.data.message) {
-        setError(error.response.data.message);
-      }
-      else {
-        setError("An Unxpected Error occured while updating story")
-      }
+        if (error.response && error.response.data && error.response.data.message) {
+            setError(error.response.data.message);
+        } else {
+            setError("An Unexpected Error occurred while updating the story");
+        }
     }
-  };
+};
 
   const handleAddOrUpdateClick = async () => {
     if (!title.trim()) {
@@ -144,6 +271,7 @@ const AddEditTravelStory = ({ type, getAllStories, storyInfo, onClose }) => {
     setVisitedDate(storyInfo?.visitedDate ? new Date(storyInfo.visitedDate) : null);
     setVisitedLoaction(storyInfo?.visitedLocation || []);
     setUploadedImageUrl(storyInfo?.imageUrl || "");
+    setImageId(storyInfo?.image_public_id || "");
   }, [storyInfo]);
 
   return (
@@ -173,9 +301,9 @@ const AddEditTravelStory = ({ type, getAllStories, storyInfo, onClose }) => {
           </div>
         </div>
       </div>
-  
+
       {error && <p className="text-xs text-red-500 text-right py-2">{error}</p>}
-  
+
       <div>
         <div className="flex-1 flex flex-col gap-2 pt-4">
           <label className="input-label text-white/90">TITLE</label>
@@ -189,16 +317,16 @@ const AddEditTravelStory = ({ type, getAllStories, storyInfo, onClose }) => {
             }}
           />
         </div>
-  
+
         <div className="my-3">
           <DateSelector date={visitedDate} setDate={setVisitedDate} storyInfo={storyInfo} />
         </div>
-  
+
         <ImageSelector
           image={storyImg}
           setImage={setStoryImg}
         />
-  
+
         <div className="flex flex-col gap-2 mt-4">
           <label className="input-label text-white/90">STORY</label>
           <textarea
@@ -210,7 +338,7 @@ const AddEditTravelStory = ({ type, getAllStories, storyInfo, onClose }) => {
             onChange={({ target }) => setStory(target.value)}
           ></textarea>
         </div>
-  
+
         <div className="pt-3">
           <label className="input-label text-white/90">VISITED LOCATIONS</label>
           <TagInput tags={visitedLocation} setTags={setVisitedLoaction} />
@@ -218,7 +346,7 @@ const AddEditTravelStory = ({ type, getAllStories, storyInfo, onClose }) => {
       </div>
     </div>
   );
-  
+
 };
 
 export default AddEditTravelStory;

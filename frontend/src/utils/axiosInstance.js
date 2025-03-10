@@ -24,7 +24,7 @@ import axios from 'axios';
 
 const axiosInstance= axios.create({
     baseURL:import.meta.env.BACKEND_URL || "http://localhost:8000",
-    timeout:5000,//used to send response time error if response not recieved within 10s
+    timeout:10000,//used to send response time error if response not recieved within 10s
     headers:{
         "Content-Type":"application/json"
     },

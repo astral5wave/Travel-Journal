@@ -8,6 +8,7 @@ const travelStorySchema = new Schema({
   createdOn: { type: Date, default: Date.now },
   visitedDate: { type: Date, required: true },
   imageUrl: { type: String, required: true },
+  image_public_id: { type: String, required: true },
   userId: { type: Schema.Types.ObjectId, ref: "User", required: true }, //this is to link this document to user document (As Foreign Key)
 });
 

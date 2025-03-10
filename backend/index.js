@@ -14,7 +14,7 @@ const TravelStory = require("./models/travelStory.model");
 
 
 const { authenticateToken } = require("./utilities");
-const upload = require("./multer");
+const { upload, uploadToCloudinary,cloudinary  } = require("./multer");
 const { errorMonitor } = require("events");
 
 const PORT=process.env.PORT || 8000;
@@ -128,11 +128,11 @@ app.get("/get-user", authenticateToken, async (req, res) => {
 });
 
 app.post("/add-travel-story", authenticateToken, async (req, res) => {
-    const { title, story, visitedLocation, visitedDate, imageUrl } = req.body;
+    const { title, story, visitedLocation, visitedDate, imageUrl,image_public_id } = req.body;
     const { userId } = req.user;
     //validate fields
 
-    if (!title || !story || !visitedLocation || !visitedDate || !imageUrl) {
+    if (!title || !story || !visitedLocation || !visitedDate || !imageUrl || !image_public_id) {
         return res.status(400).json({ error: true, message: "All fields required" });
     }
 
@@ -145,6 +145,7 @@ app.post("/add-travel-story", authenticateToken, async (req, res) => {
             visitedDate: parsedVisitedDate,
             visitedLocation,
             imageUrl,
+            image_public_id,
             userId,
         });
 
@@ -170,7 +171,7 @@ app.get("/get-travel-stories", authenticateToken, async (req, res) => {
 app.put("/edit-travel-story/:id", authenticateToken, async (req, res) => {
 
     const { id } = req.params;
-    const { title, visitedDate, visitedLocation, imageUrl, story } = req.body;
+    const { title, visitedDate, visitedLocation, imageUrl, story , image_public_id} = req.body;
     const { userId } = req.user;
 
     if (!title || !story || !visitedLocation || !visitedDate) {
@@ -188,13 +189,14 @@ app.put("/edit-travel-story/:id", authenticateToken, async (req, res) => {
         }
 
         //story found , now edit it.
-        const placeholderImage = "http://localhost:8000/assets/placeholder.png";
+        const placeholderImage = `${process.env.BASE_URL}/assets/placeholder.png`;
 
         travelStory.title = title;
         travelStory.story = story;
         travelStory.visitedLocation = visitedLocation;
         travelStory.visitedDate = visitedDate;
         travelStory.imageUrl = imageUrl || placeholderImage;  //if imageUrl in not valid then a placeholder url will be shown
+        travelStory.image_public_id = image_public_id || "placeholderImageID";
 
         await travelStory.save();
         return res.status(200).json({ story: travelStory, message: "Story Updated Successfully" });
@@ -218,14 +220,7 @@ app.delete("/delete-travel-story/:id", authenticateToken, async (req, res) => {
         await travelStory.deleteOne();  // It will delete this particular document using its id form DB
 
         //now delete the image related to the story
-        const imageUrl = travelStory.imageUrl;
-        const filePath = path.join(__dirname, "uploads", path.basename(imageUrl));
-        fs.unlink(filePath, (error) => {
-            if (error) {
-                console.log(`Failed to delete the image : ${path.basename(imageUrl)}`);
-                //make a script to maually delete it after some time
-            }
-        });
+        if(travelStory.image_public_id!="placeholderImageID") await cloudinary.uploader.destroy(travelStory.image_public_id);
         
         return res.status(200).json({ error: false, message: "Story deleted Successfully" });
 
@@ -318,39 +313,33 @@ app.post("/image-upload", upload.single("image"), async (req, res) => {
                 message: "No Image Uploaded"
             });
         }
-        //till here file is uploaded now we extract its url
-        const baseUrl=process.env.BASE_URL || `http://localhost:${PORT}`;
-        const imageUrl = `${baseUrl}/uploads/${req.file.filename}`;
-        return res.status(201).json({ imageUrl });
+        const result = await uploadToCloudinary(req.file.path);
+        return res.status(201).json({
+            imageUrl: result.secure_url,
+            image_public_id: result.public_id
+        });
     }
     catch (e) {
         return res.status(500).json({ error: true, message: e.message }); //error in server side upload
     }
 });
 
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));  // static() is middleware and only works when the url have /uploads
-// this means when a req is made from this url insted or response in json , response will be a satic file from the path specified inside it.
-//file name will be extracted from the url itself
+// app.use("/uploads", express.static(path.join(__dirname, "uploads")));  // static() is middleware and only works when the url have /uploads
+// // this means when a req is made from this url insted or response in json , response will be a satic file from the path specified inside it.
+// //file name will be extracted from the url itself
 
 app.use("/assets", express.static(path.join(__dirname, "assets")));
 
 app.delete("/delete-image", async (req, res) => {
-    const { imageUrl } = req.query;  // from query object imageURL property is extracted.
+    const { image_public_id } = req.query;  // from query object imageURL property is extracted.
 
-    if (!imageUrl) {
-        return res.status(400).json({ error: true, message: "Image URL is required" });
+    if (!image_public_id) {
+        return res.status(400).json({ error: true, message: "Image Id is required" });
     };
 
     try {
-        const imgPath = path.join(__dirname, "uploads", path.basename(imageUrl));  //this might be the location of the file
-
-        if (fs.existsSync(imgPath)) {   // it will check wether a path exists or not 
-            fs.unlinkSync(imgPath);   //it will delete the file at that location ( not used to delete directory)
-            return res.status(200).json({ error: false, message: "File deleted successfully" });
-        }
-        else {
-            return res.status(200).json({ error: false, message: "Image not found" });  //again success as no image to delete
-        }
+        await cloudinary.uploader.destroy(image_public_id);
+        return res.status(200).json({ success: true, message: "Image deleted successfully" });
     }
     catch (e) {
         return res.status(500).json({ error: true, message: "Server error during Image deletion" });
@@ -366,9 +355,7 @@ app.delete("/delete-account",authenticateToken, async(req,res)=>{
         };
         const travelStories = await TravelStory.find({ userId: userId });
         for (let i = 0; i < travelStories.length; i++) {
-            const imageUrl=travelStories[i].imageUrl;
-            const imgPath = path.join(__dirname, "uploads", path.basename(imageUrl));
-            if (fs.existsSync(imgPath)) fs.unlinkSync(imgPath);
+            await cloudinary.uploader.destroy(travelStories[i].image_public_id);
         }
         await TravelStory.deleteMany({ userId: userId });
         await User.deleteOne({ _id: userId });

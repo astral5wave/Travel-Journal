@@ -106,26 +106,54 @@ const Home = () => {
   };
 
   //handle delete story
+  // const deleteTravelStory = async (data) => {
+  //   try {
+  //     const deleteStroy = await axiosInstance.delete("/delete-travel-story/" + data._id);
+  //     if (deleteStroy.data && !deleteStroy.data.error) {
+  //       toast.error("Story Deleted Successfully")
+  //       getAllStories();
+  //       setOpenViewModal({
+  //         isShown: false,
+  //         data: null,
+  //       });
+  //     }
+  //   } catch (error) {
+  //     if (error.response && error.response.data && error.response.data.message) {
+  //       setError(error.response.data.message);
+  //     }
+  //     else {
+  //       setError("An Unxpected Error occured while deleting story");
+  //     }
+  //   }
+  // }
   const deleteTravelStory = async (data) => {
+    const deletePromise = axiosInstance.delete(`/delete-travel-story/${data._id}`);
+
+    await toast.promise(deletePromise, {
+        pending: "Deleting story...",
+        success: "Story deleted successfully!",
+        error: "Failed to delete story. Please try again."
+    });
+
     try {
-      const deleteStroy = await axiosInstance.delete("/delete-travel-story/" + data._id);
-      if (deleteStroy.data && !deleteStroy.data.error) {
-        toast.error("Story Deleted Successfully")
-        getAllStories();
-        setOpenViewModal({
-          isShown: false,
-          data: null,
-        });
-      }
+        const deleteStory = await deletePromise;
+
+        if (deleteStory.data && !deleteStory.data.error) {
+            getAllStories();
+            setOpenViewModal({
+                isShown: false,
+                data: null,
+            });
+        }
     } catch (error) {
-      if (error.response && error.response.data && error.response.data.message) {
-        setError(error.response.data.message);
-      }
-      else {
-        setError("An Unxpected Error occured while deleting story");
-      }
+        if (error.response && error.response.data && error.response.data.message) {
+            setError(error.response.data.message);
+        } else {
+            setError("An Unexpected Error occurred while deleting the story");
+        }
     }
-  }
+};
+
 
   //handle search story
   const onSearchStory = async (query) => {
@@ -206,7 +234,7 @@ const Home = () => {
       localStorage.clear();
       setTimeout(() => {
         navigate("/signup");
-      }, 3000);
+      }, 1000);
     }
   };
 
