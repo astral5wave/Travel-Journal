@@ -373,6 +373,6 @@ app.get("/", (req, res) => {
 app.use(errorHandler);
 
 app.listen(PORT, () => {
-    console.log("Server running in pot : 8000");
+    console.log(`Server running in port : ${PORT}`);
 });
 module.exports = app;
