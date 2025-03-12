@@ -71,12 +71,26 @@ const uploadToCloudinary = async (localFilePath) => {
         const result = await cloudinary.uploader.upload(localFilePath, {
             folder: "uploads"
         });
-        fs.unlinkSync(localFilePath); // Clean up local file after upload
         return result; // Returns full Cloudinary response
     } catch (error) {
-        fs.unlinkSync(localFilePath); // Clean up on error as well
         throw error;
+    } finally {
+        // Normalize path to avoid issues with different OS
+        const tempFolderPath = path.resolve(__dirname, "temp");
+        const normalizedFilePath = path.resolve(localFilePath);
+
+        if (normalizedFilePath.startsWith(tempFolderPath)) {
+            if (fs.existsSync(normalizedFilePath)) {
+                try {
+                    fs.unlinkSync(normalizedFilePath);
+                } catch (_) {
+                    // Silently handle errors, but you can log them if needed
+                }
+            }
+        }
     }
 };
+
+
 
 module.exports = { upload, uploadToCloudinary,cloudinary  };

@@ -7,15 +7,12 @@ const jwt = require("jsonwebtoken");
 const path = require("path");
 const fs = require("fs");
 const errorHandler = require("./errorHandler");
-
-
 const User = require("./models/user.model");
 const TravelStory = require("./models/travelStory.model");
-
-
 const { authenticateToken } = require("./utilities");
 const { upload, uploadToCloudinary,cloudinary  } = require("./multer");
 const { errorMonitor } = require("events");
+require("./cronJob");
 
 const PORT=process.env.PORT || 8000;
 const connect = async () => {
@@ -305,7 +302,7 @@ app.get("/travel-story/filter", authenticateToken, async (req, res) => {
 });
 
 //route to handel image upload
-app.post("/image-upload", upload.single("image"), async (req, res) => {
+app.post("/image-upload",authenticateToken, upload.single("image"), async (req, res) => {
     try {
         if (!req.file) {  //if file not valid then false is returned and file is not uploaded hence no req.file attribute
             return res.status(400).json({
@@ -323,10 +320,6 @@ app.post("/image-upload", upload.single("image"), async (req, res) => {
         return res.status(500).json({ error: true, message: e.message }); //error in server side upload
     }
 });
-
-// app.use("/uploads", express.static(path.join(__dirname, "uploads")));  // static() is middleware and only works when the url have /uploads
-// // this means when a req is made from this url insted or response in json , response will be a satic file from the path specified inside it.
-// //file name will be extracted from the url itself
 
 app.use("/assets", express.static(path.join(__dirname, "assets")));
 

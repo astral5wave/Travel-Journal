@@ -1,0 +1,72 @@
+[
+    {
+        "title": "Whispers of the Sahara",
+        "visitedDate": 1735679400000,
+        "story": "Under the endless desert sky, I rode a camel through golden dunes. The silence of the Sahara felt surreal, broken only by whispers of the wind. As night fell, I lay beneath a blanket of stars, feeling the heartbeat of the Earth itself.",
+        "visitedLocation": ["Merzouga", "Morocco"],
+        "imageName":"1.jpg"
+    },
+    {
+        "title": "Dancing with the Northern Lights",
+        "visitedDate": 1737148200000,
+        "story": "The sky ignited in green and purple hues as I stood in awe. Each flicker of light seemed to dance with my heartbeat, reminding me how small yet connected we all are.",
+        "visitedLocation": ["Tromsø", "Norway"],
+        "imageName":"2.jpg"
+    },
+    {
+        "title": "The Streets of Istanbul",
+        "visitedDate": 1740000600000,
+        "story": "Walking through the Grand Bazaar, the scent of spices filled the air. Each alley led to treasures — carpets, lanterns, and conversations with welcoming locals.",
+        "visitedLocation": ["Istanbul", "Turkey"],
+        "imageName":"3.jpg"
+    },
+    {
+        "title": "Echoes from the Fjords",
+        "visitedDate": 1736975400000,
+        "story": "Sailing between towering cliffs, I marveled at waterfalls crashing down like silver threads. The chilly air carried the scent of pine, and every curve of the fjord revealed untouched beauty.",
+        "visitedLocation": ["Geirangerfjord", "Norway"],
+        "imageName":"4.jpg"
+    },
+    {
+        "title": "Tokyo Lights and Midnight Bites",
+        "visitedDate": 1737849000000,
+        "story": "Neon lights painted the streets as I wandered Shibuya at midnight. Hidden ramen shops offered warmth and comfort, and strangers became friends over steaming bowls of noodles.",
+        "visitedLocation": ["Tokyo", "Japan"],
+        "imageName":"5.jpg"
+    },
+    {
+        "title": "The Secrets of Machu Picchu",
+        "visitedDate": 1738968600000,
+        "story": "Clouds swirled around the ancient stones as I climbed the terraces. The whispers of the Inca civilization seemed to echo through the valleys, filling me with reverence and wonder.",
+        "visitedLocation": ["Machu Picchu", "Peru"],
+        "imageName":"6.jpg"
+    },
+    {
+        "title": "Sunset at Santorini",
+        "visitedDate": 1739314200000,
+        "story": "The whitewashed walls glowed golden as the sun sank into the Aegean Sea. With a glass of wine in hand, I watched the sky ignite in shades of pink and orange, feeling at peace.",
+        "visitedLocation": ["Santorini", "Greece"],
+        "imageName":"7.jpg"
+    },
+    {
+        "title": "Whale Song in Alaska",
+        "visitedDate": 1739746200000,
+        "story": "From the deck of a boat, I saw a humpback breach. Its mighty splash echoed across the icy water, a powerful reminder of nature's grandeur.",
+        "visitedLocation": ["Juneau", "Alaska", "USA"],
+        "imageName":"8.jpg"
+    },
+    {
+        "title": "The Spirit of Varanasi",
+        "visitedDate": 1740000600000,
+        "story": "I watched the evening aarti on the Ganges River, where fire and chants created an ethereal experience. The sacred river carried countless stories of life and death.",
+        "visitedLocation": ["Varanasi", "India"],
+        "imageName":"9.jpg"
+    },
+    {
+        "title": "A Rainy Day in London",
+        "visitedDate": 1740605400000,
+        "story": "Rain pattered against my umbrella as I explored Covent Garden. Warm cafes offered shelter, and lively street performers made the gray streets feel vibrant and alive.",
+        "visitedLocation": ["London", "England"],
+        "imageName":"10.jpg"
+    }
+]

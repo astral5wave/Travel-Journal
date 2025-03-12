@@ -7,6 +7,7 @@ import axiosInstance from "../../src/utils/axiosInstance";
 import moment from "moment";
 import { toast } from "react-toastify";
 import uploadImage from "../../src/utils/uploadImage";
+import { useNavigate } from "react-router-dom";
 
 const AddEditTravelStory = ({ type, getAllStories, storyInfo, onClose }) => {
   const [title, setTitle] = useState("");
@@ -17,7 +18,7 @@ const AddEditTravelStory = ({ type, getAllStories, storyInfo, onClose }) => {
   const [visitedDate, setVisitedDate] = useState(null);
   const [error, setError] = useState("");
   const [uploadedImgUrl, setUploadedImageUrl] = useState("");
-
+  const navigate = useNavigate();
   const setNull = () => {
     setTitle("");
     setStory("");
@@ -25,218 +26,146 @@ const AddEditTravelStory = ({ type, getAllStories, storyInfo, onClose }) => {
     setVisitedDate(null);
     setVisitedLoaction([]);
   }
-  //add travel story
-  // const addTravelStory = async () => {
-  //   try {
-  //     let imageUrl = "";
-  //     let image_public_id = "";
-  //     if (storyImg) {
-  //       const imageUploadData = await uploadImage(storyImg);
-  //       imageUrl = imageUploadData.imageUrl || "";
-  //       image_public_id = imageUploadData.image_public_id || "";
-  //     }
-
-  //     const response = await axiosInstance.post("/add-travel-story", {
-  //       title,
-  //       story,
-  //       imageUrl: imageUrl || "",
-  //       image_public_id: image_public_id || "",
-  //       visitedDate: visitedDate
-  //         ? moment(visitedDate).valueOf()
-  //         : moment().valueOf(),
-  //       visitedLocation,
-  //     });
-
-  //     if (response.data && response.data.story) {
-  //       toast.success("Story Added Successfully");
-  //       getAllStories();
-  //       closeModal();
-  //       setNull();
-  //     }
-  //   } catch (error) {
-  //     if (error.response && error.response.data && error.response.data.message) {
-  //       setError(error.response.data.message);
-  //     }
-  //     else {
-  //       setError("An Unxpected Error occured while adding story")
-  //     }
-  //   }
-
-  // };
   const addTravelStory = async () => {
     try {
-        const combinedPromise = new Promise(async (resolve, reject) => {
-            let imageUrl = "";
-            let image_public_id = "";
+      const combinedPromise = new Promise(async (resolve, reject) => {
+        let imageUrl = "";
+        let image_public_id = "";
 
-            if (storyImg) {
-                const imageUploadData = await uploadImage(storyImg);
-                imageUrl = imageUploadData.imageUrl || "";
-                image_public_id = imageUploadData.image_public_id || "";
-            }
+        try {
+          if (storyImg) {
+            const imageUploadData = await uploadImage(storyImg);
+            imageUrl = imageUploadData.imageUrl || "";
+            image_public_id = imageUploadData.image_public_id || "";
+          }
 
-            const response = await axiosInstance.post("/add-travel-story", {
-                title,
-                story,
-                imageUrl: imageUrl || "",
-                image_public_id: image_public_id || "",
-                visitedDate: visitedDate
-                    ? moment(visitedDate).valueOf()
-                    : moment().valueOf(),
-                visitedLocation,
-            });
+          const response = await axiosInstance.post("/add-travel-story", {
+            title,
+            story,
+            imageUrl: imageUrl || "",
+            image_public_id: image_public_id || "",
+            visitedDate: visitedDate
+              ? moment(visitedDate).valueOf()
+              : moment().valueOf(),
+            visitedLocation,
+          });
 
-            if (response.data && response.data.story) {
-                resolve("Story added successfully!"); // Resolves successfully
-            } else {
-                reject("Failed to add story."); // Rejects if no story in response
-            }
-        });
-
-        await toast.promise(combinedPromise, {
-            pending: "Adding story... Please wait",
-            success: "Story added successfully!",
-            error: "Failed to add story. Please try again."
-        });
-
-        getAllStories();
-        closeModal();
-        setNull();
-    } catch (error) {
-        if (error.response && error.response.data && error.response.data.message) {
-            setError(error.response.data.message);
-        } else {
-            setError("An Unexpected Error occurred while adding the story");
+          if (response.data && response.data.story) {
+            resolve();
+          }
+        } catch (error) {
+          reject(error);
         }
+      });
+
+      await toast.promise(combinedPromise, {
+        pending: "Adding story... Please wait",
+        success: "Story added successfully!",
+        error: "Failed to add story. Please try again."
+      });
+
+      getAllStories();
+      closeModal();
+      setNull();
+
+    } catch (error) {
+      if (
+        error.response?.status === 401 &&
+        (error.response.data.code === "INVALID_TOKEN" ||
+          error.response.data.code === "ACCOUNT_DELETED")
+      ) {
+        localStorage.clear();
+        navigate("/login");
+      } else if (error.response && error.response.data && error.response.data.message) {
+        setError(error.response.data.message);
+      } else {
+        setError("An unexpected error occurred while adding the story.");
+      }
     }
-};
+  };
+
   //update travel story
-  // const updateTravelStory = async () => {
-  //   try {
-  //     let imageUrl = "";
-  //     let image_public_id = "";
-  //     if (storyImg && typeof storyImg === "string" && storyImg === uploadedImgUrl) {
-  //       imageUrl = storyImg;
-  //       image_public_id = imageId;
-  //     }
-  //     else if (!storyImg || (storyImg && typeof storyImg === "object")) {
-  //       if (imageId != "placeholderImageID") {
-  //         const deleteResponse = await axiosInstance.delete("/delete-image/", {
-  //           params: { image_public_id: imageId },
-  //         });
-  //         if (deleteResponse.data && deleteResponse.data.error === false) {
-  //           console.log(deleteResponse.data.message);
-  //         }
-  //       }
-
-  //       if (storyImg) {
-  //         const imageUploadData = await uploadImage(storyImg);
-  //         imageUrl = imageUploadData.imageUrl || "";
-  //         image_public_id = imageUploadData.image_public_id || "";
-  //       } else {
-  //         imageUrl = ""; // Ensure backend handles this properly
-  //         image_public_id = "";
-  //       }
-  //     }
-
-  //     //if storyImg is url means already uploaded image is there in new update but if Object means fresh image is there to be updated
-
-  //     const postData = {
-  //       title,
-  //       story,
-  //       visitedLocation,
-  //       visitedDate: visitedDate ? moment(visitedDate).valueOf() : moment().valueOf(),
-  //       imageUrl,
-  //       image_public_id,
-  //     }
-
-  //     const response = await axiosInstance.put("/edit-travel-story/" + storyInfo._id, postData);
-
-  //     if (response.data && response.data.story) {
-  //       toast.success("Story Updated Successfully");
-  //       getAllStories();
-  //       closeModal();
-  //       setUploadedImageUrl("");
-  //       setImageId("");
-  //     }
-  //   } catch (error) {
-  //     if (error.response && error.response.data && error.response.data.message) {
-  //       setError(error.response.data.message);
-  //     }
-  //     else {
-  //       setError("An Unxpected Error occured while updating story")
-  //     }
-  //   }
-  // };
   const updateTravelStory = async () => {
     try {
-        const combinedPromise = new Promise(async (resolve, reject) => {
-            let imageUrl = "";
-            let image_public_id = "";
+      const combinedPromise = new Promise(async (resolve, reject) => {
+        let imageUrl = "";
+        let image_public_id = "";
 
-            // Condition 1: If the uploaded image is the same, keep existing URL & ID
-            if (storyImg && typeof storyImg === "string" && storyImg === uploadedImgUrl) {
-                imageUrl = storyImg;
-                image_public_id = imageId;
-            }
-            // Condition 2: If a new image is uploaded or no image is provided
-            else if (!storyImg || (storyImg && typeof storyImg === "object")) {
-                if (imageId !== "placeholderImageID") {
-                    const deleteResponse = await axiosInstance.delete("/delete-image/", {
-                        params: { image_public_id: imageId },
-                    });
+        try {
+          // Condition 1: If the uploaded image is the same, keep existing URL & ID
+          if (storyImg && typeof storyImg === "string" && storyImg === uploadedImgUrl) {
+            imageUrl = storyImg;
+            image_public_id = imageId;
+          }
+          // Condition 2: If a new image is uploaded or no image is provided
+          else if (!storyImg || (storyImg && typeof storyImg === "object")) {
+            if (imageId !== "placeholderImageID") {
+              const deleteResponse = await axiosInstance.delete("/delete-image/", {
+                params: { image_public_id: imageId },
+              });
 
-                    if (deleteResponse.data && deleteResponse.data.error === false) {
-                        console.log(deleteResponse.data.message);
-                    }
-                }
-
-                if (storyImg) {
-                    const imageUploadData = await uploadImage(storyImg);
-                    imageUrl = imageUploadData.imageUrl || "";
-                    image_public_id = imageUploadData.image_public_id || "";
-                } else {
-                    imageUrl = ""; 
-                    image_public_id = "";
-                }
+              if (deleteResponse.data && deleteResponse.data.error === false) {
+                console.log(deleteResponse.data.message);
+              }
             }
 
-            const postData = {
-                title,
-                story,
-                visitedLocation,
-                visitedDate: visitedDate ? moment(visitedDate).valueOf() : moment().valueOf(),
-                imageUrl,
-                image_public_id,
-            };
-
-            const response = await axiosInstance.put(`/edit-travel-story/${storyInfo._id}`, postData);
-
-            if (response.data && response.data.story) {
-                resolve("Story updated successfully!"); // Resolve if everything succeeds
+            if (storyImg) {
+              const imageUploadData = await uploadImage(storyImg);
+              imageUrl = imageUploadData.imageUrl || "";
+              image_public_id = imageUploadData.image_public_id || "";
             } else {
-                reject("Failed to update story."); // Reject if response fails
+              imageUrl = "";
+              image_public_id = "";
             }
-        });
+          }
 
-        await toast.promise(combinedPromise, {
-            pending: "Updating story... Please wait",
-            success: "Story updated successfully!",
-            error: "Failed to update story. Please try again."
-        });
+          const postData = {
+            title,
+            story,
+            visitedLocation,
+            visitedDate: visitedDate ? moment(visitedDate).valueOf() : moment().valueOf(),
+            imageUrl,
+            image_public_id,
+          };
 
-        getAllStories();
-        closeModal();
-        setUploadedImageUrl("");
-        setImageId("");
-    } catch (error) {
-        if (error.response && error.response.data && error.response.data.message) {
-            setError(error.response.data.message);
-        } else {
-            setError("An Unexpected Error occurred while updating the story");
+          const response = await axiosInstance.put(`/edit-travel-story/${storyInfo._id}`, postData);
+
+          if (response.data && response.data.story) {
+            resolve("Story updated successfully!");
+          } else {
+            reject("Failed to update story.");
+          }
+        } catch (error) {
+          reject(error);  // ➡️ Ensures the error is caught in toast and setError
         }
+      });
+
+      await toast.promise(combinedPromise, {
+        pending: "Updating story... Please wait",
+        success: "Story updated successfully!",
+        error: "Failed to update story. Please try again."
+      });
+
+      getAllStories();
+      closeModal();
+      setUploadedImageUrl("");
+      setImageId("");
+
+    } catch (error) {
+      if (
+        error.response?.status === 401 &&
+        (error.response.data.code === "INVALID_TOKEN" ||
+          error.response.data.code === "ACCOUNT_DELETED")
+      ) {
+        localStorage.clear();
+        navigate("/login"); // Redirect user to login if account is deleted or token is invalid
+      } else if (error.response && error.response.data && error.response.data.message) {
+        setError(error.response.data.message);
+      } else {
+        setError("An unexpected error occurred while updating the story.");
+      }
     }
-};
+  };
 
   const handleAddOrUpdateClick = async () => {
     if (!title.trim()) {

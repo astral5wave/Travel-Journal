@@ -58,6 +58,11 @@ const Home = () => {
         setAllStories(response.data.stories);
       }
     } catch (error) {
+      if (error.response.status == 401 && (error.response.data.code ==="INVALID_TOKEN" || error.response.data.code === "ACCOUNT_DELETED")) {
+        // it means either token was not there or it was invalid or user was deleted from the database.
+        localStorage.clear();
+        navigate("/login");
+      }
       console.log("An unexpected error occured while retreiving stories");
     }
   };
@@ -98,62 +103,55 @@ const Home = () => {
         } else {
           getAllStories();
         }
-
       }
     } catch (error) {
+      if (error.response.status == 401 && (error.response.data.code === "INVALID_TOKEN" || error.response.data.code === "ACCOUNT_DELETED")) {
+        // it means either token was not there or it was invalid or user was deleted from the database.
+        localStorage.clear();
+        navigate("/login");
+      }
       console.log("An unexpected error occured while Updating Favourite Story");
     }
   };
 
   //handle delete story
-  // const deleteTravelStory = async (data) => {
-  //   try {
-  //     const deleteStroy = await axiosInstance.delete("/delete-travel-story/" + data._id);
-  //     if (deleteStroy.data && !deleteStroy.data.error) {
-  //       toast.error("Story Deleted Successfully")
-  //       getAllStories();
-  //       setOpenViewModal({
-  //         isShown: false,
-  //         data: null,
-  //       });
-  //     }
-  //   } catch (error) {
-  //     if (error.response && error.response.data && error.response.data.message) {
-  //       setError(error.response.data.message);
-  //     }
-  //     else {
-  //       setError("An Unxpected Error occured while deleting story");
-  //     }
-  //   }
-  // }
   const deleteTravelStory = async (data) => {
-    const deletePromise = axiosInstance.delete(`/delete-travel-story/${data._id}`);
-
-    await toast.promise(deletePromise, {
-        pending: "Deleting story...",
-        success: "Story deleted successfully!",
-        error: "Failed to delete story. Please try again."
-    });
-
     try {
-        const deleteStory = await deletePromise;
+        const deletePromise = new Promise(async (resolve, reject) => {
+            try {
+                const deleteStory = await axiosInstance.delete(`/delete-travel-story/${data._id}`);
 
-        if (deleteStory.data && !deleteStory.data.error) {
-            getAllStories();
-            setOpenViewModal({
-                isShown: false,
-                data: null,
-            });
-        }
+                if (deleteStory.data && !deleteStory.data.error) resolve("Story deleted successfully!");
+            } catch (error) {
+                reject(error);
+            }
+        });
+
+        await toast.promise(deletePromise, {
+            pending: "Deleting story...",
+            success: "Story deleted successfully!",
+            error: "Failed to delete story. Please try again."
+        });
+
+        getAllStories();
+        setOpenViewModal({
+            isShown: false,
+            data: null,
+        });
+
     } catch (error) {
-        if (error.response && error.response.data && error.response.data.message) {
-            setError(error.response.data.message);
-        } else {
-            setError("An Unexpected Error occurred while deleting the story");
+        if (
+            error.response?.status === 401 &&
+            (error.response.data.code === "INVALID_TOKEN" ||
+                error.response.data.code === "ACCOUNT_DELETED")
+        ) {
+            localStorage.clear();
+            navigate("/login"); // Redirect user to login if account is deleted or token is invalid
+        }else {
+            ("An unexpected error occurred while deleting the story.");
         }
     }
 };
-
 
   //handle search story
   const onSearchStory = async (query) => {
@@ -168,6 +166,11 @@ const Home = () => {
         setAllStories(response.data.stories);
       }
     } catch (error) {
+      if (error.response.status == 401 && (error.response.data.code ==="INVALID_TOKEN" || error.response.data.code === "ACCOUNT_DELETED")) {
+        // it means either token was not there or it was invalid or user was deleted from the database.
+        localStorage.clear();
+        navigate("/login");
+      }
       console.log("An Unexpected error occured during fetching stories");
     }
   }
@@ -197,7 +200,12 @@ const Home = () => {
           setAllStories(response.data.stories);
         }
       }
-    } catch (e) {
+    } catch (error) {
+      if (error.response.status == 401 && (error.response.data.code ==="INVALID_TOKEN" || error.response.data.code === "ACCOUNT_DELETED")) {
+        // it means either token was not there or it was invalid or user was deleted from the database.
+        localStorage.clear();
+        navigate("/login");
+      }
       console.log("An unexpected error occured while filtering stories");
     }
   }
@@ -233,8 +241,8 @@ const Home = () => {
       setDeleteModal(false); // Close the modal whether success or failure occurs
       localStorage.clear();
       setTimeout(() => {
-        navigate("/signup");
-      }, 1000);
+        navigate("/login");
+      }, 5000);
     }
   };
 
