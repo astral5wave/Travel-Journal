@@ -79,6 +79,7 @@ const resetDemoAccount = async (email) => {
         await deleteTestAccount(email);
         const userId = await createTestAccount(email);
         await addDemoTravelStories(userId);
+        console.log(`Demo account reset for ${email} at ${new Date()}`);
     } catch (error) {
         console.error(`Cron Job Error for ${email}:`, error.message);
     }
