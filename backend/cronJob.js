@@ -86,7 +86,8 @@ const resetDemoAccount = async (email) => {
 
 // Run immediately when the server starts (for the first account)
 resetDemoAccount(DEMO_EMAILS[0]);
+resetDemoAccount(DEMO_EMAILS[1]);
 
 // Schedule resets
 cron.schedule("0 0 * * *", () => resetDemoAccount(DEMO_EMAILS[0])); // Runs daily at 12 AM
-cron.schedule("0 12 * * *", () => resetDemoAccount(DEMO_EMAILS[1])); // Runs daily at 12 PM
+cron.schedule("0 0 * * *", () => resetDemoAccount(DEMO_EMAILS[1])); // Runs daily at 12 AM
