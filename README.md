@@ -32,7 +32,7 @@ To explore the app’s functionality without signing up, two demo accounts are a
 ### Demo Account Behavior
 - These accounts come with predefined travel stories.
 - Users can perform all operations, including adding, editing, and deleting stories.
-- Any changes made in the demo accounts are **not permanent** and will be **reset every 24 hours**.
+- Any changes made in the demo accounts are **not permanent** and will be **reset every 12 hours**.
 
 ## Purpose
 Voyage99 is designed **for personal use only**. It is not a social platform for sharing stories but a **private space** to document and relive travel experiences.
