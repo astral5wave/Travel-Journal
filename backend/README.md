@@ -6,7 +6,7 @@ This is the backend of **Voyage99**, a private travel journaling app. It is buil
 - **User Authentication**: Secure login and registration with password hashing.
 - **Travel Story Management**: Users can **store, update, filter, and delete** their personal travel experiences.
 - **Demo Accounts**: Two demo accounts (`test1@demo.com` and `test2@demo.com`, password: `12345678`) allow new users to explore the app without signing up.  
-- **Automated Demo Reset**: A **cron job** runs every **24 hours** to reset demo accounts, ensuring any modifications are temporary.
+- **Automated Demo Reset**: A **cron job** runs every **12 hours** to reset demo accounts, ensuring any modifications are temporary.
 - **Strict Security Measures**:
   - When a user deletes their account, all associated data is removed immediately to **prevent lingering access**.
   - During the demo account reset, security measures ensure that active demo users cannot affect the server or tamper with the database.
