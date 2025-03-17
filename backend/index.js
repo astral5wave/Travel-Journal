@@ -5,16 +5,15 @@ const express = require("express");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
 const path = require("path");
-const fs = require("fs");
 const errorHandler = require("./errorHandler");
 const User = require("./models/user.model");
 const TravelStory = require("./models/travelStory.model");
 const { authenticateToken } = require("./utilities");
-const { upload, uploadToCloudinary,cloudinary  } = require("./multer");
+const { upload, uploadToCloudinary, cloudinary } = require("./multer");
 const { errorMonitor } = require("events");
-require("./cronJob");
+const demoStories = require("./demoStories.json");
 
-const PORT=process.env.PORT || 8000;
+const PORT = process.env.PORT || 8000;
 const connect = async () => {
     try {
         await mongoose.connect(process.env.MONGO_URL);
@@ -47,6 +46,105 @@ app.use(cors(corsOptions));
 app.options("*", cors(corsOptions));
 
 
+// List of test accounts
+const DEMO_EMAILS = [
+    "test1@demo.com",
+    "test2@demo.com"
+];
+
+// Delete a specific test account
+const deleteTestAccount = async (email) => {
+    try {
+        const testUser = await User.findOne({ email });
+
+        if (testUser) {
+            const travelStories = await TravelStory.find({ userId: testUser._id });
+
+            // Parallel deletion of images from Cloudinary
+            const deleteImagePromises = travelStories
+                .filter(story => story.image_public_id) // Only filter stories with images
+                .map(story => cloudinary.uploader.destroy(story.image_public_id));
+
+            await Promise.all(deleteImagePromises);
+
+            // Parallel deletion of travel stories and user data
+            await Promise.all([
+                TravelStory.deleteMany({ userId: testUser._id }),
+                User.deleteOne({ _id: testUser._id })
+            ]);
+        }
+    } catch (error) {
+        throw new Error(`Error while deleting test account`, error);
+    }
+};
+
+
+// Create a specific test account
+const createTestAccount = async (email) => {
+    try {
+        const hashedPassword = await bcrypt.hash("12345678", 10);
+
+        const newUser = new User({
+            fullName: "Demo User",
+            email,
+            password: hashedPassword,
+        });
+
+        await newUser.save();
+        return newUser._id;
+    }
+    catch (error) {
+        throw new Error(`Error while creating test account`, error);
+    }
+};
+
+// Add 10 sample travel stories
+const addDemoTravelStories = async (userId) => {
+    try {
+        const uploadPromises = demoStories.map(async (story) => {
+            const imagePath = path.join(__dirname, "demoImages", story.imageName);
+            const result = await uploadToCloudinary(imagePath);
+
+            const travelStory = new TravelStory({
+                title: story.title,
+                story: story.story,
+                visitedDate: story.visitedDate,
+                visitedLocation: story.visitedLocation,
+                imageUrl: result.secure_url,
+                image_public_id: result.public_id,
+                userId,
+            });
+
+            await travelStory.save();
+        });
+        await Promise.all(uploadPromises); // Runs uploads in parallel
+    } catch (error) {
+        throw new Error(`Error while adding demo travel stories`, error);
+    }
+};
+
+
+
+// Main function to reset a specific test account
+const resetDemoAccount = async (email) => {
+    try {
+        await deleteTestAccount(email);
+        const userId = await createTestAccount(email);
+        await addDemoTravelStories(userId);
+    } catch (error) {
+        throw new Error(`Error while resetting demo account`, error);
+    }
+};
+
+app.post("/reset-demo-accounts", async (req, res) => {
+    try {
+        const resetDemoAccountPromises = DEMO_EMAILS.map(email => resetDemoAccount(email));
+        await Promise.all(resetDemoAccountPromises);
+        return res.status(200).json({ message: "Demo accounts reset successfully" });
+    } catch (error) {
+        return res.status(500).json({ error:error , message: "Error resetting demo accounts" });
+    }
+})
 
 app.post("/create-account", async (req, res) => {
     const { fullName, email, password } = req.body;
@@ -125,7 +223,7 @@ app.get("/get-user", authenticateToken, async (req, res) => {
 });
 
 app.post("/add-travel-story", authenticateToken, async (req, res) => {
-    const { title, story, visitedLocation, visitedDate, imageUrl,image_public_id } = req.body;
+    const { title, story, visitedLocation, visitedDate, imageUrl, image_public_id } = req.body;
     const { userId } = req.user;
     //validate fields
 
@@ -168,7 +266,7 @@ app.get("/get-travel-stories", authenticateToken, async (req, res) => {
 app.put("/edit-travel-story/:id", authenticateToken, async (req, res) => {
 
     const { id } = req.params;
-    const { title, visitedDate, visitedLocation, imageUrl, story , image_public_id} = req.body;
+    const { title, visitedDate, visitedLocation, imageUrl, story, image_public_id } = req.body;
     const { userId } = req.user;
 
     if (!title || !story || !visitedLocation || !visitedDate) {
@@ -217,8 +315,8 @@ app.delete("/delete-travel-story/:id", authenticateToken, async (req, res) => {
         await travelStory.deleteOne();  // It will delete this particular document using its id form DB
 
         //now delete the image related to the story
-        if(travelStory.image_public_id!="placeholderImageID") await cloudinary.uploader.destroy(travelStory.image_public_id);
-        
+        if (travelStory.image_public_id != "placeholderImageID") await cloudinary.uploader.destroy(travelStory.image_public_id);
+
         return res.status(200).json({ error: false, message: "Story deleted Successfully" });
 
     } catch (e) {
@@ -302,7 +400,7 @@ app.get("/travel-story/filter", authenticateToken, async (req, res) => {
 });
 
 //route to handel image upload
-app.post("/image-upload",authenticateToken, upload.single("image"), async (req, res) => {
+app.post("/image-upload", authenticateToken, upload.single("image"), async (req, res) => {
     try {
         if (!req.file) {  //if file not valid then false is returned and file is not uploaded hence no req.file attribute
             return res.status(400).json({
@@ -339,12 +437,12 @@ app.delete("/delete-image", async (req, res) => {
     }
 });
 
-app.delete("/delete-account",authenticateToken, async(req,res)=>{
+app.delete("/delete-account", authenticateToken, async (req, res) => {
     try {
-        const {userId}=req.user;
+        const { userId } = req.user;
         const isUser = await User.findOne({ _id: userId });
         if (!isUser) {
-            return res.status(401).json({ error: true, message: "User not found"}); // user is not there in databse redirect to LOGIN
+            return res.status(401).json({ error: true, message: "User not found" }); // user is not there in databse redirect to LOGIN
         };
         const travelStories = await TravelStory.find({ userId: userId });
         for (let i = 0; i < travelStories.length; i++) {
