@@ -3,6 +3,10 @@
 ## Introduction
 Voyage99 is a private travel journaling application where users can securely store their travel experiences with images, locations, and dates. It allows users to keep a personal record of their journeys, filter and search stories, and manage their travel memories efficiently.
 
+## ⚠️ Important Note
+This backend runs on **Render's free tier**, which may **go to sleep after inactivity**.  
+**If accessing after a long time, the first request may take 30 sec ~ 1 min for server to wake up. So please have patience!**
+
 ## Features
 
 ### User Account Management
